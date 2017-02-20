@@ -1,0 +1,21 @@
+---
+- yum:
+    name: pulp-admin-client
+    state: latest
+
+- yum:
+    name: pulp-rpm-admin-extensions
+    state: latest
+
+- yum:
+    name: pulp-docker-admin-extensions
+    state: latest
+
+- replace:
+    dest: /etc/pulp/admin/admin.conf
+    regexp: "\\[server\\]\n# host:"
+    replace: "[server]\nhost: {{ansible_nodename}}"
+
+- command: pulp-manage-db
+  become: yes
+  become_user: apache

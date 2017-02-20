@@ -1,0 +1,9 @@
+---
+- include: selinux.yml
+- include: user_password.yml
+- include: emacs.yml
+- include: debugger.yml
+- include: rex.yml
+- include: docker.yml
+- include: pulp-admin.yml
+

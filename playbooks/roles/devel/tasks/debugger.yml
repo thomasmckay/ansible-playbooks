@@ -1,0 +1,35 @@
+---
+# TODO: mkdir ~/code
+# TODO: create exec file
+#       sshfs -o allow_other thomasmckay@192.168.121.1:/home/thomasmckay/code /home/vagrant/code
+- yum:
+    name: sshfs
+    state: latest
+
+- lineinfile:
+    dest: /etc/fuse.conf
+    regexp: "# user_allow_other"
+    line: "user_allow_other"
+
+- yum:
+    name: npm
+    state: latest
+
+- command: npm install bower
+  become: yes
+  become_user: vagrant
+
+- command: npm install grunt
+  become: yes
+  become_user: vagrant
+
+- lineinfile:
+    state: present
+    create: yes
+    dest: /home/vagrant/.bashrc
+    line: 'export FOREMAN_APIPIE_LANGS=en'
+
+- lineinfile:
+    dest: /home/vagrant/foreman/config/settings.yaml
+    line: ":webpack_dev_server: false"
+    state: present

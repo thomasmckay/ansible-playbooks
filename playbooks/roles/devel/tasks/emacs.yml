@@ -1,0 +1,14 @@
+---
+- yum:
+    name: emacs
+    state: latest
+
+- lineinfile:
+    state: present
+    create: yes
+    dest: '/home/{{ item }}/.emacs'
+    line: '(setq make-backup-files nil)'
+    owner: vagrant
+  with_items:
+  - root
+  - vagrant

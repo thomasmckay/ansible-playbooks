@@ -1,0 +1,12 @@
+- hosts: devel
+  become: true
+  become_user: root
+  roles:
+    - playbooks/roles/devel
+
+- hosts: localhost
+  tasks:
+  - lineinfile:
+      dest: ~/.ssh/known_hosts
+      regexp: '^devel.example.com.*'
+      state: absent

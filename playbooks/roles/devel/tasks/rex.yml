@@ -1,0 +1,13 @@
+---
+- lineinfile:
+    dest: /etc/foreman-installer/scenarios.d/katello-devel-answers.yaml
+    regexp: "foreman_proxy::plugin::remote_execution::ssh: "
+    line: "foreman_proxy::plugin::remote_execution::ssh: false"
+
+- yum:
+    name: rubygem-smart_proxy_remote_execution_ssh
+    state: latest
+
+- service:
+    name: smart_proxy_dynflow_core
+    state: restarted

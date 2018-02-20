@@ -1,0 +1,161 @@
+- hosts: all
+  become: true
+  tasks:
+  # packages
+  - yum:
+      name: sshfs
+      state: latest
+  - yum:
+      name: npm
+      state: latest
+
+  # .bashrc
+  - lineinfile:
+      state: present
+      create: yes
+      dest: /home/vagrant/.bashrc
+      line: 'export FOREMAN_APIPIE_LANGS=en'
+  - lineinfile:
+      state: present
+      create: yes
+      dest: /home/vagrant/.bashrc
+      line: 'export NOTIFICATION_POLLING=9999999'
+
+  # dev tools
+  - command: npm install bower
+    become: yes
+    become_user: vagrant
+  - command: npm install grunt
+    become: yes
+    become_user: vagrant
+
+  # docker
+  - yum:
+      name: docker
+      state: latest
+  - group:
+      name: docker
+      state: present
+  - user:
+      name: vagrant
+      groups: docker
+      append: yes
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+  - lineinfile:
+      dest: /etc/sysconfig/docker
+      regexp: "OPTIONS='--selinux-enabled --log-driver=journald'"
+      line: "OPTIONS='--selinux-enabled -G docker --log-driver=journald'"
+  - service:
+      name: docker
+      state: restarted
+
+  # subscription-manager
+  - yum:
+      name: subscription-manager
+      state: latest
+  - file:
+      path: /etc/pki/product
+      state: directory
+  - template:
+      src: 69.pem
+      dest: /etc/pki/product/69.pem
+
+  # installer
+  - lineinfile:
+      dest: /etc/foreman-installer/scenarios.d/katello-devel-answers.yaml
+      regexp: "foreman_proxy::plugin::remote_execution::ssh: "
+      line: "foreman_proxy::plugin::remote_execution::ssh: false"
+  - yum:
+      name: rubygem-smart_proxy_remote_execution_ssh
+      state: latest
+
+  # dev server
+  - lineinfile:
+      dest: /home/vagrant/foreman/config/settings.yaml
+      line: ":webpack_dev_server: false"
+      state: present
+
+  # breaks 'bundle install'
+  # - blockinfile:
+  #     dest: /home/vagrant/foreman/config/settings.yaml
+  #     block: |
+  #       :loggers: false
+  #         :notifications
+  #           :enabled: false
+  #     state: present
+
+  - lineinfile:
+      dest: /etc/fuse.conf
+      regexp: "# user_allow_other"
+      line: "user_allow_other"
+
+  # pulp-admin
+  - yum:
+      name: pulp-admin-client
+      state: latest
+  - yum:
+      name: pulp-rpm-admin-extensions
+      state: latest
+  - yum:
+      name: pulp-docker-admin-extensions
+      state: latest
+  - replace:
+      dest: /etc/pulp/admin/admin.conf
+      regexp: "\\[server\\]\n# host:"
+      replace: "[server]\nhost: {{ansible_nodename}}"
+  - service:
+      name: pulp_resource_manager
+      state: stopped
+  - service:
+      name: pulp_celerybeat
+      state: stopped
+  - service:
+      name: pulp_workers
+      state: stopped
+  - command: pulp-manage-db
+    become: yes
+    become_user: apache
+  - service:
+      name: pulp_resource_manager
+      state: started
+  - service:
+      name: pulp_celerybeat
+      state: started
+  - service:
+      name: pulp_workers
+      state: started
+  #- service:
+  #    name: smart_proxy_dynflow_core
+  #    state: started
+
+  - name: remove existing Gemfile.lock
+    file:
+      name: /home/vagrant/code/foreman/Gemfile.lock
+      state: absent
+  - name: bundle install
+    become_user: vagrant
+    become: yes
+    command: bash -lc "bundle install"
+    args:
+      chdir: /home/vagrant/code/foreman
+      creates: /home/vagrant/code/foreman/Gemfile.lock
+  - name: gem install ruby-debug-ide
+    become_user: vagrant
+    become: yes
+    command: bash -lc "gem install ruby-debug-ide"
+    args:
+      chdir: /home/vagrant/code/foreman
+  - name: npm install
+    become_user: vagrant
+    become: yes
+    command: bash -lc "npm install"
+    args:
+      chdir: /home/vagrant/code/foreman
+  - name: rake webpack:compile
+    become_user: vagrant
+    become: yes
+    command: bash -lc "rake webpack:compile"
+    args:
+      chdir: /home/vagrant/code/foreman

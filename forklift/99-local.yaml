@@ -1,0 +1,226 @@
+---
+devel:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+      katello_devel_github_username: "thomasmckay"
+      #foreman_installer_options: "--foreman-proxy-tftp=true"
+      #foreman_installer_module_prs: "katello/katello/189"
+      katello_repositories_environment: staging
+      # https://github.com/evgeni/theforeman.org/blob/c6953615931dbcc2e4fed5ce9a12faa40e58e51b/_posts/2018-02-16-running-foreman-with-postgresql-96-from-software-collections.md#quick-setup-with-forklift
+      foreman_installer_options: "--skip-puppet-version-check"
+      # puppet_repositories_version: 5
+      # selinux_state: permissive
+      # foreman_installer_custom_hiera: |
+      #   postgresql::params::version: 9.6
+      #   postgresql::globals::client_package_name: rh-postgresql96-postgresql-syspaths
+      #   postgresql::globals::server_package_name: rh-postgresql96-postgresql-server-syspaths
+      #   postgresql::globals::contrib_package_name: rh-postgresql96-postgresql-contrib-syspaths
+      #   postgresql::globals::service_name: rh-postgresql96-postgresql
+      #   postgresql::globals::datadir: /var/opt/rh/rh-postgresql96/lib/pgsql/data
+      #   postgresql::globals::confdir: /var/opt/rh/rh-postgresql96/lib/pgsql/data
+      #   postgresql::globals::bindir: /usr/bin
+    playbook:
+    - 'playbooks/devel.yml'
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_devel.yml'
+  memory: 8192
+  cpus: 2
+  disk_size: 80
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.230
+        libvirt__network_name: example-com
+clair:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_clair.yml'
+  memory: 2048
+  cpus: 1
+  disk_size: 20
+  domain: example.com
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    sshfs_opts_append: '-o allow_other'
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.234
+        libvirt__network_name: example-com
+
+# centos7-devel:
+#   primary: true
+#   box: centos7
+#   ansible:
+#     playbook: 'playbooks/devel.yml'
+#     group: 'devel'
+#     variables:
+#       ssh_forward_agent: true
+#       foreman_devel_github_push_ssh: True
+#       katello_devel_github_username: thomasmckay
+
+
+# capsule:
+#   box: centos7
+#   ansible:
+#     playbook: 'playbooks/foreman_proxy_content_dev.yml'
+#     group: 'foreman-proxy-content'
+#     server: 'devel'
+#   networks:
+#     - type: 'private_network'
+#       options:
+#         ip: 192.168.123.231
+#         libvirt__network_name: example-com
+
+# sat62:
+#   box:      'rhel7'
+#   memory:   5120
+#   ansible:
+#     group: 'server'
+#     playbook:
+#     - 'plugins/sat-deploy/playbooks/satellite_62.yml'
+#     - 'user_playbooks/setup.yml'
+
+# testing:
+#   box: centos7
+#   ansible:
+#     group: 'devel'
+#     variables:
+#       katello_devel_github_username: "thomasmckay"
+#       puppet_repositories_version: 4
+#     playbook:
+#     - 'playbooks/devel.yml'
+#     - 'user_playbooks/setup.yml'
+#   networks:
+#     - type: 'private_network'
+#       options:
+#         ip: 192.168.100.218
+#         libvirt__network_name: provisioning
+
+# centos7-devel:
+#   box: centos7
+#   ansible:
+#     playbook: 'playbooks/devel.yml'
+#     group: 'devel'
+#     variables:
+#       katello_devel_github_username: "thomasmckay"
+
+
+# kregistry:
+#   box: centos7
+#   ansible:
+#     playbook: 'playbooks/katello.yml'
+#     group: 'server'
+#     variables:
+#       foreman_installer_module_prs: "katello/capsule/101,theforeman/foreman_proxy/303"
+#       foreman_installer_options: "--capsule-docker-port=5001"
+
+# xregistry:
+#   box: centos7
+#   ansible:
+#     group: 'devel'
+#     variables:
+#       katello_devel_github_username: "thomasmckay"
+#       foreman_installer_module_prs: "katello/capsule/101"
+#       foreman_installer_options: "--capsule-docker-registry-port=5001"
+#       atomic_registry_registry_port: "5000"
+#     playbook:
+#     - 'playbooks/selinux.yml'
+#     - 'playbooks/devel.yml'
+#     - 'playbooks/atomic_registry.yml'
+#     - 'user_playbooks/setup.yml'
+
+# katello:
+#   box: centos7
+#   ansible:
+#     group: 'devel'
+#     variables:
+#       katello_devel_github_username: "thomasmckay"
+#     playbook:
+#     - 'playbooks/devel.yml'
+#     - 'user_playbooks/setup.yml'
+#   networks:
+#     - type: 'private_network'
+#       options:
+#         ip: 192.168.100.218
+#         libvirt__network_name: provisioning
+
+# yregistry:
+#   box: centos7
+#   ansible:
+#     group: server
+#     variables:
+#       foreman_installer_module_prs: "katello/capsule/101,katello/katello/148"
+#       foreman_installer_options: "--capsule-docker-registry-port=5001 --katello-docker-registry-port=5001"
+#       atomic_registry_registry_port: "5000"
+#     playbook:
+#     - 'user_playbooks/selinux.yml'
+#     - 'playbooks/katello.yml'
+#     - 'playbooks/atomic_registry.yml'
+#     - 'user_playbooks/setup.yml'
+
+# registry:
+#   box: centos7
+#   ansible:
+#     group: server
+#     playbook:
+#     - 'user_playbooks/selinux.yml'
+#     - 'playbooks/katello.yml'
+#     - 'playbooks/atomic_registry.yml'
+#     - 'user_playbooks/setup.yml'
+#   networks:
+#     - type: 'private_network'
+#       options:
+#         ip: 192.168.100.220
+#         libvirt__network_name: provisioning
+
+# devregistry:
+#   box: centos7
+#   ansible:
+#     group: devel
+#     variables:
+#       foreman_installer_module_prs: "katello/capsule/101,katello/katello/148"
+#       foreman_installer_options: "--capsule-docker-registry-port=5001 --katello-docker-registry-port=5001"
+#       atomic_registry_registry_port: "5000"
+#     playbook:
+#     - 'user_playbooks/selinux.yml'
+#     - 'playbooks/devel.yml'
+#     - 'playbooks/atomic_registry.yml'
+#     - 'user_playbooks/setup.yml'
+
+# testregistry:
+#   box: centos7
+#   ansible:
+#     group: 'devel'
+#     variables:
+#       katello_devel_github_username: "thomasmckay"
+#       foreman_installer_module_prs: "katello/capsule/101,theforeman/foreman_proxy/303"
+#       foreman_installer_options: "--capsule-docker-registry-port=5001"
+#       atomic_registry_registry_port: "5000"
+#     playbook:
+#     - 'playbooks/selinux.yml'
+#     - 'playbooks/katello_atomic_registry.yml'
+
+# xxxsat62:
+#   box_name: 'rhel7_2'
+#   memory:   8192
+#   cpus:     4
+#   options: '--no-scripts --disable-selinux'
+#   libvirt:  'http://sat-r220-08.lab.eng.rdu2.redhat.com/pub/boxes/rhel-7.2_x86_64-server.box'
+#   ansible:
+#     group: 'server'
+#     playbook: 'plugins/sat-deploy/playbooks/satellite_62.yml'
+
+

@@ -1,0 +1,43 @@
+- hosts: all
+  become: true
+  tasks:
+  # selinux
+  - command: setenforce 0
+  - lineinfile:
+      dest: /etc/selinux/config
+      regexp: '^SELINUX=enforcing'
+      line: 'SELINUX=permissive'
+
+  # passwords
+  - lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication no'
+      line: 'PasswordAuthentication yes'
+  # python -c 'import crypt; print crypt.crypt("redhat", "$1$SomeSalt$")'
+  - user:
+      name: vagrant
+      password: $1$SomeSalt$FQ8j8BGQWfkLvglE85Qiu0
+  - user:
+      name: root
+      password: $1$SomeSalt$FQ8j8BGQWfkLvglE85Qiu0
+  - service:
+      name: sshd
+      state: restarted
+
+  # packages
+  - yum:
+      name: emacs
+      state: latest
+
+  # .emacs
+  - lineinfile:
+      state: present
+      create: yes
+      dest: /home/vagrant/.emacs
+      line: '(setq make-backup-files nil)'
+      owner: vagrant
+  - lineinfile:
+      state: present
+      create: yes
+      dest: /root/.emacs
+      line: '(setq make-backup-files nil)'

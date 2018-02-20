@@ -9,20 +9,8 @@ devel:
       katello_devel_github_username: "thomasmckay"
       #foreman_installer_options: "--foreman-proxy-tftp=true"
       #foreman_installer_module_prs: "katello/katello/189"
-      katello_repositories_environment: staging
-      # https://github.com/evgeni/theforeman.org/blob/c6953615931dbcc2e4fed5ce9a12faa40e58e51b/_posts/2018-02-16-running-foreman-with-postgresql-96-from-software-collections.md#quick-setup-with-forklift
+      #katello_repositories_environment: staging
       foreman_installer_options: "--skip-puppet-version-check"
-      # puppet_repositories_version: 5
-      # selinux_state: permissive
-      # foreman_installer_custom_hiera: |
-      #   postgresql::params::version: 9.6
-      #   postgresql::globals::client_package_name: rh-postgresql96-postgresql-syspaths
-      #   postgresql::globals::server_package_name: rh-postgresql96-postgresql-server-syspaths
-      #   postgresql::globals::contrib_package_name: rh-postgresql96-postgresql-contrib-syspaths
-      #   postgresql::globals::service_name: rh-postgresql96-postgresql
-      #   postgresql::globals::datadir: /var/opt/rh/rh-postgresql96/lib/pgsql/data
-      #   postgresql::globals::confdir: /var/opt/rh/rh-postgresql96/lib/pgsql/data
-      #   postgresql::globals::bindir: /usr/bin
     playbook:
     - 'playbooks/devel.yml'
     - 'user_playbooks/setup.yml'
@@ -30,6 +18,10 @@ devel:
   memory: 8192
   cpus: 2
   disk_size: 80
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
   domain: example.com
   networks:
     - type: 'private_network'
@@ -49,11 +41,11 @@ clair:
   memory: 2048
   cpus: 1
   disk_size: 20
-  domain: example.com
   sshfs:
     host_path: '/home/thomasmckay/code'
     guest_path: '/home/vagrant/code'
-    sshfs_opts_append: '-o allow_other'
+    options: '-o allow_other'
+  domain: example.com
   networks:
     - type: 'private_network'
       options:

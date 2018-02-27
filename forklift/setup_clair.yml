@@ -108,7 +108,7 @@
       name: postgresql96-devel
       state: latest
   - stat:
-      path: /var/lib/pgsql/9.6/data
+      path: /var/lib/pgsql/9.6/data/pg_hba.conf
     register: pgsql96
   - command: "/usr/pgsql-9.6/bin/postgresql96-setup initdb"
     when: pgsql96.stat.exists == False
@@ -149,3 +149,8 @@
   - service:
       name: docker
       state: restarted
+
+#tar -C /usr/local -xzf go1.10.linux-amd64.tar.gz
+#export PATH=/usr/local/go/bin:$PATH
+#go get -u github.com/derekparker/delve/cmd/dlv
+

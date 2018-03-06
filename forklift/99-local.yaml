@@ -28,6 +28,7 @@ devel:
       options:
         ip: 192.168.123.230
         libvirt__network_name: example-com
+
 clair:
   primary: true
   box: centos7
@@ -38,6 +39,7 @@ clair:
     playbook:
     - 'user_playbooks/setup.yml'
     - 'user_playbooks/setup_clair.yml'
+    - 'user_playbooks/setup_quay.yml'
   memory: 2048
   cpus: 1
   disk_size: 20
@@ -50,6 +52,29 @@ clair:
     - type: 'private_network'
       options:
         ip: 192.168.123.234
+        libvirt__network_name: example-com
+quay:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_quay.yml'
+  memory: 2048
+  cpus: 1
+  disk_size: 20
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.235
         libvirt__network_name: example-com
 
 # centos7-devel:

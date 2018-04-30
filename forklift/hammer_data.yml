@@ -1,0 +1,109 @@
+# from forklift dir:
+# ansible-playbook -i user_playbooks/temporary.inventory user_playbooks/hammer_data.yml
+
+- hosts: all
+  become: true
+  tasks:
+  - name: remove existing Gemfile.lock
+    file:
+      name: /home/vagrant/code/hammer-cli-csv/Gemfile.lock
+      state: absent
+  - name: bundle install
+    become_user: vagrant
+    become: yes
+    command: bash -lc "bundle install"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+      creates: /home/vagrant/code/foreman/Gemfile.lock
+
+  - name: csv organizations
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv organizations --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1844963874&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: delete organization
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme organization delete --label Default_Organization"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+    ignore_errors: True
+
+  - name: csv settings
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv settings --continue-on-error --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1980379451&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv domains
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv domains --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=575921415&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv smart-proxies
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv smart-proxies --verbose --continue-on-error --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1464540266&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv subscriptions
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv subscriptions --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1963171316&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv products
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv products --continue-on-error --no-sync --verbose --file  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=2002488369&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv lifecycle-environments
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv lifecycle-environments --verbose --file  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=983288520&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv content-views
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv content-views --verbose --file  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1240768753&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv content-view-filters
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv content-view-filters --verbose --file  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1337158629&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv host-collections
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv host-collections --verbose --file  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=608090279&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv roles
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv roles --continue-on-error --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1617742595&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv
+
+  - name: csv users
+    become_user: vagrant
+    become: yes
+    command: bash -lc "hammer --server https://devel.example.com --username admin --password changeme csv users --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=2069810362&single=true&output=csv'"
+    args:
+      chdir: /home/vagrant/code/hammer-cli-csv

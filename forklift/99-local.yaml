@@ -9,12 +9,15 @@ devel:
       katello_devel_github_username: "thomasmckay"
       #foreman_installer_options: "--foreman-proxy-tftp=true"
       #foreman_installer_module_prs: "katello/katello/189"
-      #katello_repositories_environment: staging
+      katello_repositories_environment: staging
       foreman_installer_options: "--skip-puppet-version-check"
+      hammer_devel_github_username: "thomasmckay"
+      hammer_devel_github_fork_remote_name: "origin"
     playbook:
     - 'playbooks/devel.yml'
     - 'user_playbooks/setup.yml'
     - 'user_playbooks/setup_devel.yml'
+    - 'playbooks/hammer_devel.yml'
   memory: 8192
   cpus: 2
   disk_size: 80
@@ -27,6 +30,48 @@ devel:
     - type: 'private_network'
       options:
         ip: 192.168.123.230
+        libvirt__network_name: example-com
+
+registry:
+  box: centos7
+  ansible:
+    playbook:
+    - 'playbooks/foreman_proxy_content_dev.yml'
+    - 'user_playbooks/setup.yml'
+    group: 'foreman-proxy-content'
+    server: 'devel'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.231
+        libvirt__network_name: example-com
+
+testing:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+      katello_devel_github_username: "thomasmckay"
+      foreman_installer_options: "--skip-puppet-version-check"
+    playbook:
+    - 'playbooks/devel.yml'
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_devel.yml'
+  memory: 4096
+  cpus: 1
+  disk_size: 20
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.229
         libvirt__network_name: example-com
 
 clair:

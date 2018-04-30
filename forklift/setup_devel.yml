@@ -159,3 +159,9 @@
     command: bash -lc "rake webpack:compile"
     args:
       chdir: /home/vagrant/code/foreman
+  - name: rake katello:reset
+    become_user: vagrant
+    become: yes
+    command: bash -lc "rake katello:reset"
+    args:
+      chdir: /home/vagrant/code/foreman

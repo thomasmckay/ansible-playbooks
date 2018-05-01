@@ -52,16 +52,9 @@ def get_signature(image, digest)
     request = Net::HTTP::Get.new(uri.request_uri)
     response = http.request(request)
     if response.kind_of? Net::HTTPNotFound
-      signature = {}
+      signature = ''
     else
       signature = response.body
-      # signature = Tempfile.new(digest)
-      # signature.write(response.body)
-      # signature.rewind
-      puts "----------------"
-      puts signature
-      puts "----------------"
-      # signature.rewind
     end
   end
   signature
@@ -86,26 +79,24 @@ def sign_repository(repository)
   product = api.resource(:products).call(:show, {
     id: repository['product']['id']
   })
-  #puts "XXXXXXXX #{JSON.pretty_generate(product)}"
   gpgkey = api.resource(:gpg_keys).call(:show, {
     id: product['gpg_key']['id']
   })
-  #puts "XXXXXXXX #{JSON.pretty_generate(gpgkey)}"
   GPGME::Key.import(gpgkey['content'])
   crypto = GPGME::Crypto.new
-  ctx = GPGME::Ctx.new
 
   imagename = repository['docker_upstream_name']
   manifests.each do |manifest|
     puts manifest['digest']
     digest = manifest['digest']
     raw_signature = get_signature(imagename, digest)
-    x = GPGME::Data.from_str(raw_signature)
-    #signature = crypto.decrypt(GPGME::Data.new(raw_signature))
-    #signature = crypto.decrypt(raw_signature)
-    #signature = ctx.decrypt(File.open("/home/vagrant/code/tmp/rhel7etcd@sha256\=61bd5317a92c3213cfe70e2b629098c51c50728ef48ff984ce929983889ed663"))
-    signature = crypto.decrypt(x)
-    puts "ZZZZZZZZZZZ #{signature}"
+    signature = nil
+    sigstore = crypto.verify(raw_signature) do |sig|
+      signature = sig
+    end
+    sigstore = JSON.parse(sigstore.read)
+    puts "SIGNATURE VALID #{signature.valid?}"
+    puts "ZZZZZZZZZZ #{sigstore}"
     return #?????
   end
 end

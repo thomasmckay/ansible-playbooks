@@ -39,10 +39,22 @@ end
   end
 end
 
-def get_signature(image, digest)
+
+def sigstore_url(registry, image, digest)
+  sigstore = @options[:sigstores].detect {|s| s['registry'] == registry}
+  return unless sigstore
+
+  box = Safemode::Box.new(self)
+  erb = ERB.new(sigstore['signature'])
+  box.eval(erb.src, {}, {image: image, digest: digest})
+end
+
+
+def get_signature(registry, image, digest)
   signature = nil
-  url = "https://access.redhat.com/webassets/docker/content/sigstore/" +
-        "#{image}@sha256=#{digest[7..-1]}/signature-1"
+  url = sigstore_url(registry, image, digest)
+  return unless url
+
   uri = URI(url)
   nethttp = Net::HTTP.new(uri.host, uri.port)
   nethttp.use_ssl = uri.scheme == 'https'
@@ -84,11 +96,12 @@ def import_repository_signature(repository)
   GPGME::Key.import(gpgkey['content'])
   crypto = GPGME::Crypto.new
 
-  imagename = repository['docker_upstream_name']
+  registry = repository['url']
+  image = repository['docker_upstream_name']
   manifests.each do |manifest|
     puts manifest['digest']
     digest = manifest['digest']
-    raw_signature = get_signature(imagename, digest)
+    raw_signature = get_signature(registry, image, digest)
     if raw_signature.nil?
       puts "NO SIGNATURE"
     else
@@ -104,26 +117,19 @@ def import_repository_signature(repository)
       end
       puts sigstore
     end
+    return
   end
 end
-
-puts @options[:sigstores]
-
-sigstore = @options[:sigstores].detect {|s| s['registry'] == 'https://registry.access.redhat.com'}
-require 'pry'; binding.pry ########################################################
-box = Safemode::Box.new(sigstore)
-erb = ERB.new(sigstore['signature'])
-url = box.eval(erb.src, {}, {image: 'imagename', digest: 'sha256:123456'})
-puts "url"
 
 if ARGV[0] == 'after_sync'
   if ARGV.length < 2
     repository = {
-      'id' => 7,
+      'id' => 71,
       'content_type' => 'docker',
       'organization' => {'id' => 3},
       'product' => {'id' => 1},
-      'docker_upstream_name' => 'rhscl/httpd-24-rhel7'
+      'url' => 'https://registry.access.redhat.com',
+      'docker_upstream_name' => 'rhscl/python-36-rhel7'
     }
   else
     repository = JSON.parse(STDIN.read)['katello::repository']

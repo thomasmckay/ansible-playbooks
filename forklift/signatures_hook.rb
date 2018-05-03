@@ -5,25 +5,29 @@ require 'yaml'
 require 'apipie-bindings'
 require 'open-uri'
 require 'gpgme'
+require 'safemode'
+require 'erb'
 
 @defaults = {
-  :noop      => false,
-  :uri       => 'https://devel.example.com/',
-  :username  => 'admin',
-  :password  => 'changeme'
+  url:       'https://devel.example.com/',
+  username:  'admin',
+  password:  'changeme',
+  sigstores: []
 }
 
 @options = {
-  :yamlfile  => 'hooks.yaml',
+  #yamlfile: 'config/settings.plugins.d/signatures.yaml',
+  yamlfile: 'config/signatures.yaml'
 }
+
 
 if File.exists? @options[:yamlfile]
   @yaml = YAML.load_file(@options[:yamlfile])
 
-  if @yaml.has_key?(:settings) and @yaml[:settings].is_a?(Hash)
-    @yaml[:settings].each do |key,val|
-      if not @options.has_key?(key)
-        @options[key] = val
+  if @yaml.has_key?('settings') and @yaml['settings'].is_a?(Hash)
+    @yaml['settings'].each do |key,val|
+      if not @options.has_key?(key.to_sym)
+        @options[key.to_sym] = val
       end
     end
   end
@@ -35,13 +39,8 @@ end
   end
 end
 
-
 def get_signature(image, digest)
   signature = nil
-
-  image = 'rhel7/etcd'
-  digest = 'sha256:35fdf949dd7698ab5def00c504293be5fb5a5af29066a6e1684cf81a80bd6ce2'
-
   url = "https://access.redhat.com/webassets/docker/content/sigstore/" +
         "#{image}@sha256=#{digest[7..-1]}/signature-1"
   uri = URI(url)
@@ -52,7 +51,7 @@ def get_signature(image, digest)
     request = Net::HTTP::Get.new(uri.request_uri)
     response = http.request(request)
     if response.kind_of? Net::HTTPNotFound
-      signature = ''
+      signature = nil
     else
       signature = response.body
     end
@@ -60,15 +59,15 @@ def get_signature(image, digest)
   signature
 end
 
-def sign_repository(repository)
+def import_repository_signature(repository)
   return unless repository['content_type'] == 'docker'
 
   api = ApipieBindings::API.new({
-    :uri => @options[:uri],
-    :username => @options[:username],
-    :password => @options[:password],
-    :api_version => '2',
-    :timeout => @options[:timeout]
+    uri: @options[:url],
+    username: @options[:username],
+    password: @options[:password],
+    api_version: '2',
+    timeout: @options[:timeout]
   })
 
   manifests = api.resource(:docker_manifests).call(:index, {
@@ -90,26 +89,47 @@ def sign_repository(repository)
     puts manifest['digest']
     digest = manifest['digest']
     raw_signature = get_signature(imagename, digest)
-    signature = nil
-    sigstore = crypto.verify(raw_signature) do |sig|
-      signature = sig
+    if raw_signature.nil?
+      puts "NO SIGNATURE"
+    else
+      signature = nil
+      sigstore = crypto.verify(raw_signature) do |sig|
+        signature = sig
+      end
+      if signature.nil? || sigstore.nil?
+        puts "ERROR"
+      else
+        sigstore = JSON.parse(sigstore.read)
+        puts "SIGNATURE VALID #{signature.valid?}"
+      end
+      puts sigstore
     end
-    sigstore = JSON.parse(sigstore.read)
-    puts "SIGNATURE VALID #{signature.valid?}"
-    puts "ZZZZZZZZZZ #{sigstore}"
-    return #?????
   end
 end
 
-puts "XXXXXXXX #{ARGV}"
-#repository = JSON.parse(STDIN.read)['katello::repository']
-repository = {
-  'id' => 7,
-  'content_type' => 'docker',
-  'organization' => {'id' => 3},
-  'product' => {'id' => 1},
-  'docker_upstream_name' => 'rhscl/httpd-24-rhel7'
-}
-puts "XXXXXXXX #{JSON.pretty_generate(repository)}"
+puts @options[:sigstores]
 
-sign_repository(repository)
+sigstore = @options[:sigstores].detect {|s| s['registry'] == 'https://registry.access.redhat.com'}
+require 'pry'; binding.pry ########################################################
+box = Safemode::Box.new(sigstore)
+erb = ERB.new(sigstore['signature'])
+url = box.eval(erb.src, {}, {image: 'imagename', digest: 'sha256:123456'})
+puts "url"
+
+if ARGV[0] == 'after_sync'
+  if ARGV.length < 2
+    repository = {
+      'id' => 7,
+      'content_type' => 'docker',
+      'organization' => {'id' => 3},
+      'product' => {'id' => 1},
+      'docker_upstream_name' => 'rhscl/httpd-24-rhel7'
+    }
+  else
+    repository = JSON.parse(STDIN.read)['katello::repository']
+  end
+
+  import_repository_signature(repository)
+else
+  # ????
+end

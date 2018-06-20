@@ -10,7 +10,7 @@ devel:
       #foreman_installer_options: "--foreman-proxy-tftp=true"
       #foreman_installer_module_prs: "katello/katello/189"
       katello_repositories_environment: staging
-      foreman_installer_options: "--skip-puppet-version-check"
+      #foreman_installer_options: "--skip-puppet-version-check"
       hammer_devel_github_username: "thomasmckay"
       hammer_devel_github_fork_remote_name: "origin"
     playbook:
@@ -32,6 +32,30 @@ devel:
         ip: 192.168.123.230
         libvirt__network_name: example-com
 
+minishift:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_minishift.yml'
+  memory: 4096
+  cpus: 1
+  disk_size: 80
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.240
+        libvirt__network_name: example-com
+
 registry:
   box: centos7
   ansible:
@@ -45,6 +69,28 @@ registry:
     - type: 'private_network'
       options:
         ip: 192.168.123.231
+        libvirt__network_name: example-com
+robotello:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'playbooks/robottelo.yml'
+  memory: 2048
+  cpus: 1
+  disk_size: 20
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.240
         libvirt__network_name: example-com
 
 testing:
@@ -98,6 +144,7 @@ clair:
       options:
         ip: 192.168.123.234
         libvirt__network_name: example-com
+
 quay:
   primary: true
   box: centos7

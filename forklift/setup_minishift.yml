@@ -1,0 +1,78 @@
+# https://github.com/minishift/minishift/pull/2422
+# http://artifacts.ci.centos.org/minishift/minishift/pr/2422/linux-amd64/
+#
+# ssh-copy-id root@192.168.123.240
+#
+# MINISHIFT_ENABLE_EXPERIMENTAL=on minishift start --vm-driver=generic \
+#     --remote-ip-address=192.168.123.240 --remote-ssh-username=root \
+#     --ssh-key-to-connect-remote=/home/thomasmckay/.ssh/id_rsa
+#
+# MINISHIFT_ENABLE_EXPERIMENTAL=on minishift start --vm-driver=generic \
+#     --remote-ip-address=192.168.123.240 --remote-ssh-username=root \
+#     --ssh-key-to-connect-remote=/home/thomasmckay/.ssh/id_rsa
+#     --insecure-registry=devel.example.com \
+#     --extra-clusterup-flags="--image=devel.example.com/openshift/origin"
+#
+# minishift addon apply admin-user
+#
+- hosts: all
+  become: true
+  tasks:
+  # docker
+  - yum:
+      name: docker
+      state: latest
+  - group:
+      name: docker
+      state: present
+  - user:
+      name: vagrant
+      groups: docker
+      append: yes
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+  - lineinfile:
+      dest: /etc/sysconfig/docker
+      regexp: "OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false'"
+      line: "OPTIONS='--selinux-enabled -G docker --log-driver=journald --signature-verification=false'"
+  - lineinfile:
+      state: present
+      dest: /etc/sysconfig/docker
+      line: "INSECURE_REGISTRY='--insecure-registry devel.example.com'"
+  - service:
+      name: docker
+      state: restarted
+
+  # Open port :2376
+  - yum:
+      name: net-tools
+      state: latest
+  - command: "netstat"
+  - command: "iptables -F"
+  - command: "iptables-save"
+
+  - name: yum install pip
+    yum:
+      name: python2-pip
+      state: latest
+  - name: pip install docker-py
+    pip:
+      name: docker-py
+  - name: docker login
+    command: "docker login -u admin -p changeme devel.example.com"
+  - name: openshift/origin
+    docker_image:
+      name: openshift/origin
+      repository: devel.example.com/openshift/origin
+      tag: v3.9.0
+  - name: openshift/origin-pod
+    docker_image:
+      name: openshift/origin-pod
+      repository: devel.example.com/openshift/origin-pod
+      tag: v3.9.0
+  - name: openshift/origin-haproxy-router
+    docker_image:
+      name: openshift/origin-haproxy-router
+      repository: devel.example.com/openshift/origin-haproxy-router
+      tag: v3.9.0

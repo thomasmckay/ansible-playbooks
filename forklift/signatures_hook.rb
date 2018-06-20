@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+# gem install apipie-bindings
+# gem install gpgme
+
+exit 1
+
 require 'json'
 require 'yaml'
 require 'apipie-bindings'
@@ -12,7 +17,12 @@ require 'erb'
   url:       'https://devel.example.com/',
   username:  'admin',
   password:  'changeme',
-  sigstores: []
+  sigstores: [
+    {
+      registry: 'https://registry.access.redhat.com',
+      signature: 'https://access.redhat.com/webassets/docker/content/sigstore/<%= image %>@sha256=<%= digest.split(":")[1] %>/signature-1'
+    }
+  ]
 }
 
 @options = {
@@ -41,11 +51,11 @@ end
 
 
 def sigstore_url(registry, image, digest)
-  sigstore = @options[:sigstores].detect {|s| s['registry'] == registry}
+  sigstore = @options[:sigstores].detect {|s| s[:registry] == registry}
   return unless sigstore
 
   box = Safemode::Box.new(self)
-  erb = ERB.new(sigstore['signature'])
+  erb = ERB.new(sigstore[:signature])
   box.eval(erb.src, {}, {image: image, digest: digest})
 end
 
@@ -71,21 +81,25 @@ def get_signature(registry, image, digest)
   signature
 end
 
-def import_repository_signature(repository)
-  return unless repository['content_type'] == 'docker'
-
-  api = ApipieBindings::API.new({
+_api = nil
+def api
+  _api ||= ApipieBindings::API.new({
     uri: @options[:url],
     username: @options[:username],
     password: @options[:password],
     api_version: '2',
     timeout: @options[:timeout]
   })
+end
+
+def import_repository_signature(repository)
+  return unless repository['content_type'] == 'docker'
 
   manifests = api.resource(:docker_manifests).call(:index, {
-    organization_id: repository['organization']['id'],
+    repository_id: repository['id'],
     per_page: 99999
   })['results']
+  return true if manifests.empty?
 
   product = api.resource(:products).call(:show, {
     id: repository['product']['id']
@@ -98,44 +112,71 @@ def import_repository_signature(repository)
 
   registry = repository['url']
   image = repository['docker_upstream_name']
+
+  all_pass = true
   manifests.each do |manifest|
-    puts manifest['digest']
+    puts "HOOK: #{manifest['digest']}"
     digest = manifest['digest']
     raw_signature = get_signature(registry, image, digest)
     if raw_signature.nil?
-      puts "NO SIGNATURE"
+      puts "HOOK: NO SIGNATURE"
+      all_pass = false
     else
       signature = nil
       sigstore = crypto.verify(raw_signature) do |sig|
         signature = sig
       end
       if signature.nil? || sigstore.nil?
-        puts "ERROR"
+        puts "HOOK: ERROR"
+        all_pass = false
       else
         sigstore = JSON.parse(sigstore.read)
-        puts "SIGNATURE VALID #{signature.valid?}"
+        puts "HOOK: SIGNATURE VALID #{signature.valid?}"
       end
-      puts sigstore
     end
-    return
   end
+
+  all_pass
 end
 
+puts "HOOK #{ARGV[0]}"
 if ARGV[0] == 'after_sync'
   if ARGV.length < 2
     repository = {
-      'id' => 71,
+      'id' => 52,
       'content_type' => 'docker',
       'organization' => {'id' => 3},
       'product' => {'id' => 1},
       'url' => 'https://registry.access.redhat.com',
-      'docker_upstream_name' => 'rhscl/python-36-rhel7'
+      'docker_upstream_name' => 'rhel7/etcd'
     }
   else
     repository = JSON.parse(STDIN.read)['katello::repository']
   end
 
-  import_repository_signature(repository)
-else
-  # ????
+  result = import_repository_signature(repository)
+  exit 1 unless result
+elsif ARGV[0] == 'before_promote'
+  if ARGV.length < 2
+    content_view_version = {
+      'id' => 17,
+      'repositories' => [{'id' => 53,'name' => 'rhel7/etcd','label' => 'rhel7_etcd','content_type' => 'docker'}],
+      'organization' => {'id' => 3}
+    }
+  else
+    content_view_version = JSON.parse(STDIN.read)['katello::contentviewversion']
+  end
+
+  all_pass = true
+  content_view_version['repositories'].each do |repository|
+    next if repository['content_type'] != 'docker'
+    repository = api.resource(:repositories).call(:show, {
+      id: repository['id']
+    })
+    result = import_repository_signature(repository)
+    all_pass = false unless result
+  end
+  exit 1 unless all_pass
 end
+
+exit 0

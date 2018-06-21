@@ -3,8 +3,6 @@
 # gem install apipie-bindings
 # gem install gpgme
 
-exit 1
-
 require 'json'
 require 'yaml'
 require 'apipie-bindings'

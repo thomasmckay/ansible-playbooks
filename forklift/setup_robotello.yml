@@ -1,0 +1,78 @@
+# http://robottelo.readthedocs.io/en/latest/index.html#quickstart
+#
+# sudo scl enable rh-python35 bash
+#
+# cd code/robottelo/
+# pip install -U setuptools
+# pip install -U pip
+# pip install -r requirements.txt
+#
+# py.test  --junit-xml=results.xml -m tier1 tests/foreman/cli/test_hostgroup.py
+# make test-foreman-api
+#
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Install packages
+    package:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - gcc
+      - git
+      - libffi-devel
+      - openssl-devel
+      #- python-devel
+      #- python-pip
+      #- python-virtualenv
+      - centos-release-scl
+      #- rh-python35-devel
+      #- rh-python35-virtualenv
+      - rh-python35
+
+  # - name: scl enable rh-python35 bash
+  #   command: scl enable rh-python35 bash
+  #   become: yes
+  #   become_user: vagrant
+  # - name: scl enable rh-python35 bash
+  #   command: scl enable rh-python35 bash
+  #   become: yes
+  #   become_user: root
+
+  # - name: Update setuptools
+  #   pip:
+  #     name: setuptools
+  #     state: latest
+  #     #virtualenv: "/home/vagrant/venv"
+  #     #virtualenv_python: python3.5
+  #     executable: /opt/rh/rh-python35/root/usr/bin/pip3
+
+  # - name: Upgrade virtualenv in the virtualenv
+  #   pip:
+  #     name: virtualenv
+  #     state: latest
+  #     #virtualenv: "/home/vagrant/venv"
+  #     #virtualenv_python: python3.5
+  #     executable: /opt/rh/rh-python35/root/usr/bin/pip3
+
+  # - name: Upgrade pip in the virtualenv
+  #   pip:
+  #     name: pip
+  #     state: latest
+  #     #virtualenv: "/home/vagrant/venv"
+  #     #virtualenv_python: python3.5
+  #     executable: /opt/rh/rh-python35/root/usr/bin/pip3
+
+  # - name: Install requirements
+  #   pip:
+  #     requirements: "/home/vagrant/code/robottelo/requirements.txt"
+  #     #virtualenv: "/home/vagrant/venv"
+  #     #virtualenv_python: python3.5
+  #     executable: /opt/rh/rh-python35/root/usr/bin/pip3
+  #     chdir: "/home/vagrant/code/robottelo"
+
+  # - name: run
+  #   command: "/home/vagrant/venv/bin/py.test --junit-xml=results.xml -m endtoend endtoend"
+  #   args:
+  #     chdir: "/home/vagrant/code/robottelo"

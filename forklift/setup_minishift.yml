@@ -39,7 +39,7 @@
   - lineinfile:
       state: present
       dest: /etc/sysconfig/docker
-      line: "INSECURE_REGISTRY='--insecure-registry devel.example.com'"
+      line: "INSECURE_REGISTRY='--insecure-registry demo.example.com'"
   - service:
       name: docker
       state: restarted
@@ -60,19 +60,19 @@
     pip:
       name: docker-py
   - name: docker login
-    command: "docker login -u admin -p changeme devel.example.com"
+    command: "docker login -u admin -p changeme demo.example.com"
   - name: openshift/origin
     docker_image:
       name: openshift/origin
-      repository: devel.example.com/openshift/origin
+      repository: demo.example.com/openshift/origin
       tag: v3.9.0
   - name: openshift/origin-pod
     docker_image:
       name: openshift/origin-pod
-      repository: devel.example.com/openshift/origin-pod
+      repository: demo.example.com/openshift/origin-pod
       tag: v3.9.0
   - name: openshift/origin-haproxy-router
     docker_image:
       name: openshift/origin-haproxy-router
-      repository: devel.example.com/openshift/origin-haproxy-router
+      repository: demo.example.com/openshift/origin-haproxy-router
       tag: v3.9.0

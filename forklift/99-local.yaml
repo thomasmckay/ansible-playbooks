@@ -33,6 +33,38 @@ devel:
         ip: 192.168.123.230
         libvirt__network_name: example-com
 
+demo:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+      katello_devel_github_username: "thomasmckay"
+      #foreman_installer_options: "--foreman-proxy-tftp=true"
+      #foreman_installer_module_prs: "katello/katello/189"
+      #katello_repositories_environment: staging
+      #foreman_installer_options: "--skip-puppet-version-check"
+      hammer_devel_github_username: "thomasmckay"
+      hammer_devel_github_fork_remote_name: "origin"
+    playbook:
+    - 'playbooks/luna-devel.yml'
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_demo.yml'
+  memory: 8192
+  cpus: 2
+  disk_size: 80
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.230
+        libvirt__network_name: provisioning
+
 minishift:
   primary: true
   box: centos7
@@ -43,8 +75,8 @@ minishift:
     playbook:
     - 'user_playbooks/setup.yml'
     - 'user_playbooks/setup_minishift.yml'
-  memory: 4096
-  cpus: 1
+  memory: 10240
+  cpus: 4
   disk_size: 80
   sshfs:
     host_path: '/home/thomasmckay/code'
@@ -55,7 +87,7 @@ minishift:
     - type: 'private_network'
       options:
         ip: 192.168.123.240
-        libvirt__network_name: example-com
+        libvirt__network_name: provisioning
 
 registry:
   box: centos7
@@ -71,6 +103,7 @@ registry:
       options:
         ip: 192.168.123.231
         libvirt__network_name: example-com
+
 robotello:
   primary: true
   box: centos7
@@ -168,6 +201,25 @@ quay:
     - type: 'private_network'
       options:
         ip: 192.168.123.235
+        libvirt__network_name: example-com
+
+atomic:
+  box_name: 'rhel7_1_atomic'
+  ansible:
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'user_playbooks/setup.yml'
+  memory:   2048
+  default:  true
+  pty:      true
+  #libvirt:  'http://sat-r220-02.lab.eng.rdu2.redhat.com/pub/atomic/rhel-atomic-libvirt-7.1-1.x86_64.box'
+  libvirt:  'https://sat-r220-02.lab.eng.rdu2.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/RHEL_Boxes/rhel-atomic-libvirt-7.1-1.x86_64.box'
+  domain: example.com
+  networks:
+    - type: 'private_network'
+      options:
+        ip: 192.168.123.248
         libvirt__network_name: example-com
 
 # centos7-devel:

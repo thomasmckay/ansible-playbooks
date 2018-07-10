@@ -1,0 +1,5 @@
+[devel]
+devel.example.com
+
+[devel:vars]
+ansible_password=redhat

@@ -1,0 +1,12 @@
+# from forklift dir:
+# ansible-playbook -i user_playbooks/temporary.inventory user_playbooks/temporary.yml
+
+---
+- hosts: devel
+  become: yes
+  tasks:
+  - lineinfile:
+      dest: /etc/hosts
+      regexp: ".* devel.example.com devel"
+      line: "192.168.123.230 devel.example.com devel"
+

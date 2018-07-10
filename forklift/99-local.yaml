@@ -87,7 +87,8 @@ minishift:
     - type: 'private_network'
       options:
         ip: 192.168.123.240
-        libvirt__network_name: provisioning
+        #libvirt__network_name: provisioning
+        libvirt__network_name: example-com
 
 registry:
   box: centos7

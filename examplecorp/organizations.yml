@@ -3,11 +3,10 @@
 #   hammer --server https://devel.example.com --username admin --password changeme organization delete --label Default_Organization
 ---
 - hosts: fixtures
-  vars:
-    username: admin
-    password: changeme
-    server_url: https://192.168.123.230
   tasks:
+  - name: Load config
+    include_vars:
+      file: config.yml
   - name: Create Example Corporation
     foreman_organization:
       username: "{{ username }}"

@@ -52,6 +52,17 @@
   - command: "iptables -F"
   - command: "iptables-save"
 
+  # TODO
+  # yum install -y wget
+  # wget https://github.com/openshift/origin/releases/download/v1.5.1/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz
+  # tar xvf openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz 
+  # mv openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit oc-tool
+  # export PATH=`pwd`/oc-tool:$PATH
+  # oc login
+  # oc get clusterpolicy -o json | jq '.items[] | .roles[] | .name'
+  # yum install -y jq
+
+
   - name: yum install pip
     yum:
       name: python2-pip

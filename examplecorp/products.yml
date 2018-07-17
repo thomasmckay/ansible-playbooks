@@ -1,10 +1,9 @@
 ---
 - hosts: fixtures
-  vars:
-    username: admin
-    password: changeme
-    server_url: https://192.168.123.230
   tasks:
+  - name: Load config
+    include_vars:
+      file: config.yml
   - name: Update products
     katello_product:
       username: "{{ username }}"

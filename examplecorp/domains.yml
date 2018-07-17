@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: fixtures
   vars:
     username: admin
     password: changeme
@@ -14,5 +14,6 @@
       name: "{{ item.name }}"
       organizations: "{{ item.organizations }}"
     with_items:
-      - {name: "example.com", organizations: ["Example Corporation"]}
+      - name: "example.com"
+        organizations: ["Example Corporation"]
 

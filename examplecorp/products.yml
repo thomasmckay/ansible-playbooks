@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: fixtures
   vars:
     username: admin
     password: changeme
@@ -17,28 +17,20 @@
       description: "{{ item.description }}"
       organization: "{{ item.organization }}"
     with_items:
-      - {
-          name: "Red Hat Container Catalog",
-          label: "rhcc",
-          description: "",
-          organization: "Example Corporation",
-        }
-      - {
-          name: "Gitlab Registry",
-          label: "gitlab",
-          description: "",
-          organization: "Example Corporation",
-        }
-      - {
-          name: "Docker Hub",
-          label: "dockerhub",
-          description: "",
-          organization: "Example Corporation",
-        }
-      - {
-          name: "quay.io",
-          label: "quayio",
-          description: "",
-          organization: "Example Corporation",
-        }
+      - name: "Red Hat Container Catalog"
+        label: "rhcc"
+        description: ""
+        organization: "Example Corporation"
+      - name: "Gitlab Registry"
+        label: "gitlab"
+        description: ""
+        organization: "Example Corporation"
+      - name: "Docker Hub"
+        label: "dockerhub"
+        description: ""
+        organization: "Example Corporation"
+      - name: "quay.io"
+        label: "quayio"
+        description: ""
+        organization: "Example Corporation"
 

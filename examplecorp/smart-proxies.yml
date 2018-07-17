@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: fixtures
   vars:
     username: admin
     password: changeme
@@ -17,18 +17,14 @@
       url: "{{ item.url }}"
       lifecycle_environments: "{{ item.lifecycle_environments }}"
     with_items:
-      - {
-          name: "devel.example.com",
-          organizations: ["Example Corporation"]},
-          locations: ["Default Location"]},
-          url: "https://devel.example.com:9090",
-          lifecycle_environments: []
-         }
-      - {
-          name: "registry.example.com",
-          organizations: ["Example Corporation"]},
-          locations: ["Default Location"]},
-          url: "https://registry.example.com:9090",
-          lifecycle_environments: ["Production"]
-         }
+      - name: "devel.example.com"
+        organizations: ["Example Corporation"]}
+        locations: ["Default Location"]}
+        url: "https://devel.example.com:9090"
+        lifecycle_environments: []
+      - name: "registry.example.com"
+        organizations: ["Example Corporation"]}
+        locations: ["Default Location"]}
+        url: "https://registry.example.com:9090"
+        lifecycle_environments: ["Production"]
 

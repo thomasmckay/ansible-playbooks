@@ -25,6 +25,11 @@
       create: yes
       dest: /home/vagrant/.bashrc
       line: 'export NOTIFICATION_POLLING=9999999'
+  - lineinfile:
+      state: present
+      create: yes
+      dest: /home/vagrant/.bashrc
+      line: 'source /home/vagrant/.rvm/scripts/rvm'
 
   # dev tools
   - command: npm install bower
@@ -160,21 +165,27 @@
     command: bash -lc "gem install ruby-debug-ide"
     args:
       chdir: /home/vagrant/code/foreman
-  - name: npm install
-    become_user: vagrant
-    become: yes
-    command: bash -lc "npm install"
-    args:
-      chdir: /home/vagrant/code/foreman
-  - name: rake webpack:compile
-    become_user: vagrant
-    become: yes
-    command: bash -lc "rake webpack:compile"
-    args:
-      chdir: /home/vagrant/code/foreman
-  - name: rake katello:reset
-    become_user: vagrant
-    become: yes
-    command: bash -lc "rake katello:reset"
-    args:
-      chdir: /home/vagrant/code/foreman
+  # - name: npm cache clean
+  #   become_user: vagrant
+  #   become: yes
+  #   command: bash -lc "npm cache clean"
+  #   args:
+  #     chdir: /home/vagrant/code/foreman
+  # - name: npm install
+  #   become_user: vagrant
+  #   become: yes
+  #   command: bash -lc "npm install"
+  #   args:
+  #     chdir: /home/vagrant/code/foreman
+  # - name: rake webpack:compile
+  #   become_user: vagrant
+  #   become: yes
+  #   command: bash -lc "rake webpack:compile"
+  #   args:
+  #     chdir: /home/vagrant/code/foreman
+  # - name: rake katello:reset
+  #   become_user: vagrant
+  #   become: yes
+  #   command: bash -lc "rake katello:reset"
+  #   args:
+  #     chdir: /home/vagrant/code/foreman

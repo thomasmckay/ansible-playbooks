@@ -1,0 +1,28 @@
+---
+- hosts: all
+  vars:
+    username: admin
+    password: changeme
+    server_url: https://192.168.123.230
+  tasks:
+  - name: Update settings
+    foreman_setting:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      server_url: "{{ server_url }}"
+      verify_ssl: false
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+    with_items:
+      - {name: "default_location",          value: "Default Location"}
+      - {name: "default_organization",      value: "Example Corporation"}
+      - {name: "foreman_url",               value: "https://devel.example.com"}
+      - {name: "idle_timeout",              value: "60000"}
+      - {name: "require_ssl_smart_proxies", value: "FALSE"}
+      - {name: "restrict_registered_smart_proxies", value: "FALSE"}
+      - {name: "safemode_render",           value: "FALSE"}
+      - {name: "unattended_url",            value: "http://devel.example.com"}
+      - {name: "pulp_export_destination",   value: "/var/www/html/pub/exports"}
+      - {name: "default_download_policy",   value: "on_demand"}
+      - {name: "lab_features",              value: "TRUE"}
+

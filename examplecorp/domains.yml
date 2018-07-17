@@ -1,0 +1,18 @@
+---
+- hosts: all
+  vars:
+    username: admin
+    password: changeme
+    server_url: https://192.168.123.230
+  tasks:
+  - name: Update domains
+    foreman_domain:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      server_url: "{{ server_url }}"
+      verify_ssl: false
+      name: "{{ item.name }}"
+      organizations: "{{ item.organizations }}"
+    with_items:
+      - {name: "example.com", organizations: ["Example Corporation"]}
+

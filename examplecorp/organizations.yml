@@ -1,0 +1,27 @@
+# manual steps since broken
+#   hammer --server https://devel.example.com --username admin --password changeme csv organizations --verbose --file 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpwo4shmwFmbG2O5RdYIZw7REcsVxAHeDejzC68DvWTtMfm4zGyuvQnCs9J97B7eJqJVWsylwOJM_I/pub?gid=1844963874&single=true&output=csv'
+#   hammer --server https://devel.example.com --username admin --password changeme organization delete --label Default_Organization
+---
+- hosts: all
+  vars:
+    username: admin
+    password: changeme
+    server_url: https://192.168.123.230
+  tasks:
+  - name: Create Example Corporation
+    foreman_organization:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      server_url: "{{ server_url }}"
+      verify_ssl: false
+      state: present
+      name: Example Corporation
+      #label: examplecorp
+  - name: Destroy Default Organization
+    foreman_organization:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      server_url: "{{ server_url }}"
+      verify_ssl: false
+      state: absent
+      name: Default Organization

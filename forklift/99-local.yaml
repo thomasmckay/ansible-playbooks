@@ -18,7 +18,7 @@ devel:
     - 'user_playbooks/setup.yml'
     - 'user_playbooks/setup_devel.yml'
     #- 'playbooks/hammer_devel.yml'
-    - 'user_playbooks/setup_robotello.yml'
+    #- 'user_playbooks/setup_robotello.yml'
   memory: 8192
   cpus: 2
   disk_size: 80

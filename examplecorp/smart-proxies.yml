@@ -1,0 +1,34 @@
+---
+- hosts: all
+  vars:
+    username: admin
+    password: changeme
+    server_url: https://192.168.123.230
+  tasks:
+  - name: Update smart proxies
+    foreman_smart_proxy:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      server_url: "{{ server_url }}"
+      verify_ssl: false
+      name: "{{ item.name }}"
+      organizations: "{{ item.organizations }}"
+      locations: "{{ item.locations }}"
+      url: "{{ item.url }}"
+      lifecycle_environments: "{{ item.lifecycle_environments }}"
+    with_items:
+      - {
+          name: "devel.example.com",
+          organizations: ["Example Corporation"]},
+          locations: ["Default Location"]},
+          url: "https://devel.example.com:9090",
+          lifecycle_environments: []
+         }
+      - {
+          name: "registry.example.com",
+          organizations: ["Example Corporation"]},
+          locations: ["Default Location"]},
+          url: "https://registry.example.com:9090",
+          lifecycle_environments: ["Production"]
+         }
+

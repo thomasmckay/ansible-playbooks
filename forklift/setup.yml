@@ -30,14 +30,23 @@
       state: latest
 
   # .emacs
-  - lineinfile:
+  - name: Disable emacs backup files for vagrant user
+    lineinfile:
       state: present
       create: yes
       dest: /home/vagrant/.emacs
       line: '(setq make-backup-files nil)'
       owner: vagrant
-  - lineinfile:
+  - name: Disable emacs backup files for root user
+    lineinfile:
       state: present
       create: yes
       dest: /root/.emacs
       line: '(setq make-backup-files nil)'
+
+  - name: Permanent mount of /home/vagrant/code
+    lineinfile:
+      state: present
+      create: no
+      dest: /etc/fstab
+      line: '192.168.121.1:/home/thomasmckay/code /home/vagrant/code nfs rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=192.168.121.1,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=192.168.121.1 0 0'

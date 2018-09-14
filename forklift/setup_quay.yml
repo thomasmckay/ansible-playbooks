@@ -1,3 +1,53 @@
+  # - name: pull quay image
+  #   docker_image:
+  #     name: quay.io/coreos/quay
+  #     tag: v2.8.0
+  #   become_user: vagrant
+  # - name: pull redis image
+  #   docker_image:
+  #     name: quay.io/quay/redis
+  #     tag: latest
+  # - name: pull mysql image
+  #   docker_image:
+  #     name: mysql
+  #     tag: 5.7
+
+  # - name: redis container
+  #   docker:
+  #     name: redis
+  #     image: quay.io/quay/redis
+  #     state: started
+  #     ports:
+  #     - "6379:6379"
+
+  # - name: mysql container
+  #   docker:
+  #     name: mysql
+  #     image: mysql:5.7
+  #     state: started
+  #     ports:
+  #     - "3306:3306"
+  #     env:
+  #       MYSQL_USER: coreosuser
+  #       MYSQL_DATABASE: enterpriseregistrydb
+  #       MYSQL_CONTAINER_NAME: mysql
+  #       MYSQL_ROOT_PASSWORD: 10hWfe6cns3lNEOIp5Q0hiEtABBDYaMn
+  #       MYSQL_PASSWORD: 10hWfe6cns3lNEOIp5Q0hiEtABBDYaMn
+
+  # - name: quay container
+  #   docker:
+  #     name: quay
+  #     image: quay.io/coreos/quay:v2.8.0
+  #     state: started
+  #     restart_policy: always
+  #     ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     volumes:
+  #     - /home/vagrant/quay-config:/conf/stack
+  #     - /home/vagrant/quay-storage:/datastorage
+
+
 - hosts: all
   become: true
   tasks:
@@ -30,10 +80,74 @@
       name: docker
       state: restarted
 
-  - yum:
+  - name: yum install epel-release
+    yum:
+      name: epel-release
+      state: latest
+  - name: yum install python-pip
+    yum:
       name: python-pip
       state: latest
-  - command: pip install docker-py
+  - name: pip install docker-py
+    command: pip install docker-py
+
+  - name: yum install postgresql
+    yum:
+      name: postgresql
+      state: latest
+  - name: yum install gpgme
+    yum:
+      name: gpgme
+      state: latest
+  - name: yum install python-virtualenv
+    yum:
+      name: python-virtualenv
+      state: latest
+
+  - name: setup repos to yum install yarn
+    get_url:
+      url: https://dl.yarnpkg.com/rpm/yarn.repo
+      dest: /etc/yum.repos.d/yarn.repo
+  - name: yum install yarn
+    yum:
+      name: yarn
+      state: latest
+  - name: setup repos to install node
+    get_url:
+      url: https://rpm.nodesource.com/setup_8.x
+      dest: /tmp/node-setup
+  - name: install node
+    command: bash /tmp/node-setup
+
+  - name: yum install python-setuptools
+    yum:
+      name: python-setuptools
+      state: latest
+
+  - name: yum install git
+    yum:
+      name: git
+      state: latest
+  - name: yum install gcc
+    yum:
+      name: gcc
+      state: latest
+  - name: yum install python-devel
+    yum:
+      name: python-devel
+      state: latest
+  - name: yum install openldap-devel
+    yum:
+      name: openldap-devel
+      state: latest
+  - name: yum install gcc-c++
+    yum:
+      name: gcc-c++
+      state: latest
+  - name: yum install gpgme-devel
+    yum:
+      name: gpgme-devel
+      state: latest
 
   - file:
       path: /home/vagrant/quay-storage
@@ -44,51 +158,58 @@
       state: directory
     become_user: vagrant
 
-  - name: pull quay image
-    docker_image:
-      name: quay.io/coreos/quay
-      tag: v2.8.0
+  - name: create virtualenv
     become_user: vagrant
-  - name: pull redis image
-    docker_image:
-      name: quay.io/quay/redis
-      tag: latest
-  - name: pull mysql image
-    docker_image:
-      name: mysql
-      tag: 5.7
+    become: yes
+    command: virtualenv /home/vagrant/venv
+  - name: install pip latest
+    become_user: vagrant
+    become: yes
+    pip:
+      name: pip
+      virtualenv: /home/vagrant/venv
+      extra_args: --upgrade
 
-  - name: redis container
-    docker:
-      name: redis
-      image: quay.io/quay/redis
-      state: started
-      ports:
-      - "6379:6379"
+  - name: pip install requirements.txt
+    become_user: vagrant
+    become: yes
+    pip:
+      requirements: /home/vagrant/code/quay/requirements.txt
+      virtualenv: /home/vagrant/venv
+  - name: pip install requirements-dev.txt
+    become_user: vagrant
+    become: yes
+    pip:
+      requirements: /home/vagrant/code/quay/requirements-dev.txt
+      virtualenv: /home/vagrant/venv
+  - name: pip install requirements-tests.txt
+    become_user: vagrant
+    become: yes
+    pip:
+      requirements: /home/vagrant/code/quay/requirements-tests.txt
+      virtualenv: /home/vagrant/venv
 
-  - name: mysql container
-    docker:
-      name: mysql
-      image: mysql:5.7
-      state: started
-      ports:
-      - "3306:3306"
-      env:
-        MYSQL_USER: coreosuser
-        MYSQL_DATABASE: enterpriseregistrydb
-        MYSQL_CONTAINER_NAME: mysql
-        MYSQL_ROOT_PASSWORD: 10hWfe6cns3lNEOIp5Q0hiEtABBDYaMn
-        MYSQL_PASSWORD: 10hWfe6cns3lNEOIp5Q0hiEtABBDYaMn
+  - name: install pip pydevd
+    become_user: vagrant
+    become: yes
+    pip:
+      name: pydevd
+      virtualenv: /home/vagrant/venv
+      extra_args: --upgrade
 
-  - name: quay container
-    docker:
-      name: quay
-      image: quay.io/coreos/quay:v2.8.0
-      state: started
-      restart_policy: always
-      ports:
-      - "80:80"
-      - "443:443"
-      volumes:
-      - /home/vagrant/quay-config:/conf/stack
-      - /home/vagrant/quay-storage:/datastorage
+  - name: yum install go
+    yum:
+      name: go
+      state: latest
+  - name: set GOPATH bashrc
+    blockinfile:
+      path: /home/vagrant/.bashrc
+      block: |
+        export GOPATH=/home/vagrant/go
+        export PATH=$PATH:/home/vagrant/go/bin
+  - name: go get goreman
+    become_user: vagrant
+    become: yes
+    command: go get github.com/mattn/goreman
+    environment:
+      GOPATH: /home/vagrant/go

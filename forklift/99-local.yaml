@@ -9,7 +9,7 @@ devel:
       katello_devel_github_username: "thomasmckay"
       #foreman_installer_options: "--foreman-proxy-tftp=true"
       #foreman_installer_module_prs: "katello/katello/189"
-      katello_repositories_environment: staging
+      #katello_repositories_environment: staging
       #foreman_installer_options: "--skip-puppet-version-check"
       hammer_devel_github_username: "thomasmckay"
       hammer_devel_github_fork_remote_name: "origin"
@@ -22,10 +22,13 @@ devel:
   memory: 8192
   cpus: 2
   disk_size: 80
-  sshfs:
+  #sshfs:
+  #  host_path: '/home/thomasmckay/code'
+  #  guest_path: '/home/vagrant/code'
+  #  options: '-o allow_other'
+  nfs:
     host_path: '/home/thomasmckay/code'
     guest_path: '/home/vagrant/code'
-    options: '-o allow_other'
   domain: example.com
   networks:
     - type: 'private_network'
@@ -136,24 +139,23 @@ testing:
     variables:
       ssh_forward_agent: true
       katello_devel_github_username: "thomasmckay"
-      foreman_installer_options: "--skip-puppet-version-check"
+      #foreman_installer_options: "--skip-puppet-version-check"
     playbook:
     - 'playbooks/devel.yml'
     - 'user_playbooks/setup.yml'
-    - 'user_playbooks/setup_devel.yml'
-  memory: 4096
-  cpus: 1
-  disk_size: 20
-  sshfs:
-    host_path: '/home/thomasmckay/code'
-    guest_path: '/home/vagrant/code'
-    options: '-o allow_other'
+    #- 'user_playbooks/setup_devel.yml'
+  memory: 8092
+  cpus: 2
+  disk_size: 80
   domain: example.com
   networks:
     - type: 'private_network'
       options:
         ip: 192.168.123.229
         libvirt__network_name: example-com
+  nfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
 
 clair:
   primary: true
@@ -190,18 +192,17 @@ quay:
     playbook:
     - 'user_playbooks/setup.yml'
     - 'user_playbooks/setup_quay.yml'
-  memory: 2048
-  cpus: 1
-  disk_size: 20
-  sshfs:
+  memory: 8192
+  cpus: 2
+  disk_size: 80
+  nfs:
     host_path: '/home/thomasmckay/code'
     guest_path: '/home/vagrant/code'
-    options: '-o allow_other'
   domain: example.com
   networks:
     - type: 'private_network'
       options:
-        ip: 192.168.123.235
+        ip: 192.168.123.222
         libvirt__network_name: example-com
 
 atomic:

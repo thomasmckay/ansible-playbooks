@@ -204,6 +204,68 @@ quay:
       options:
         ip: 192.168.123.222
         libvirt__network_name: example-com
+quayvb:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    playbook:
+    - 'user_playbooks/setup.yml'
+    - 'user_playbooks/setup_quay.yml'
+  memory: 8192
+  cpus: 2
+  disk_size: 80
+  sshfs:
+    host_path: '/home/thomasmckay/code'
+    guest_path: '/home/vagrant/code'
+    options: '-o allow_other'
+  # nfs:
+  #   host_path: '/home/thomasmckay/code'
+  #   guest_path: '/home/vagrant/code'
+  domain: example.com
+  # networks:
+  #   - type: 'private_network'
+  #     options:
+  #       ip: 10.0.2.223
+  #   #     virtualbox__intnet: example-com
+  #   #     #libvirt__network_name: example-com
+  #   - type: 'public_network'
+  #     options:
+  #       bridge: 'virbr2'
+  #       ip: 192.168.123.223
+
+vbdevel:
+  primary: true
+  box: centos7
+  ansible:
+    group: 'devel'
+    variables:
+      ssh_forward_agent: true
+    # playbook:
+    # - 'user_playbooks/setup.yml'
+    # - 'user_playbooks/setup_quay.yml'
+  memory: 1024
+  cpus: 1
+  # disk_size: 80
+  domain: example.com
+  networks:
+    # WORKS but does not set IP
+    # - type: 'private_network'
+    #   options:
+    #     type: dhcp
+    #     ip: 192.168.57.112
+    #     name: 'vboxnet1'
+    #     adapter: 2
+    # WORKS!
+    - type: 'private_network'
+      options:
+        type: static
+        ip: 192.168.57.112
+        name: 'vboxnet1'
+        adapter: 2
+
 
 atomic:
   box_name: 'rhel7_1_atomic'

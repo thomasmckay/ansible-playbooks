@@ -182,7 +182,7 @@ clair:
         ip: 192.168.123.234
         libvirt__network_name: example-com
 
-quay:
+xxquay:
   primary: true
   box: centos7
   ansible:
@@ -204,7 +204,7 @@ quay:
       options:
         ip: 192.168.123.222
         libvirt__network_name: example-com
-quayvb:
+quay:
   primary: true
   box: centos7
   ansible:
@@ -225,7 +225,13 @@ quayvb:
   #   host_path: '/home/thomasmckay/code'
   #   guest_path: '/home/vagrant/code'
   domain: example.com
-  # networks:
+  networks:
+    - type: 'private_network'
+      options:
+        type: static
+        ip: 192.168.57.112
+        name: 'vboxnet1'
+        adapter: 2
   #   - type: 'private_network'
   #     options:
   #       ip: 10.0.2.223

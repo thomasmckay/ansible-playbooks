@@ -95,6 +95,14 @@
     yum:
       name: postgresql
       state: latest
+  - name: yum install postgresql-server
+    yum:
+      name: postgresql-server
+      state: latest
+  - name: yum install postgresql-contrib
+    yum:
+      name: postgresql-contrib
+      state: latest
   - name: yum install gpgme
     yum:
       name: gpgme
@@ -213,3 +221,34 @@
     command: go get github.com/mattn/goreman
     environment:
       GOPATH: /home/vagrant/go
+
+  # 'yarn test' depends on chrome
+  # wget https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip
+  # sudo yum install -y wget
+  # wget https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip
+  # sudo yum install -y unzip
+  # unzip chromedriver_linux64.zip 
+  # wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+  # sudo yum install google-chrome-stable_current_x86_64.rpm
+  - name: yum install google-chrome
+    yum:
+      name: https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+
+  # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-centos-7
+  # sudo postgresql-setup initdb
+  # sudo vi /var/lib/pgsql/data/pg_hba.conf
+  # host    all             all             127.0.0.1/32            ident
+  # host    all             all             ::1/128                 ident
+  # ...to...
+  # host    all             all             127.0.0.1/32            md5
+  # host    all             all             ::1/128                 md5
+  # sudo systemctl start postgresql
+  # sudo systemctl enable postgresql
+  
+  # setup postgresql db
+  # conf/stack/config.yaml
+  #   DB_URI: postgresql://postgres:redhat@quay.example.com:5432/quay?sslmode=disable
+  # sudo -i -u postgres
+  # createdb quay
+  # ???? createuser --login --pwprompt --createdb --superuser --username quay
+  # psql -d quay

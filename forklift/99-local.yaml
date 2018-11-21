@@ -1,5 +1,5 @@
 ---
-devel:
+xxdevel:
   primary: true
   box: centos7
   ansible:
@@ -182,7 +182,7 @@ clair:
         ip: 192.168.123.234
         libvirt__network_name: example-com
 
-xxquay:
+devel:
   primary: true
   box: centos7
   ansible:
@@ -202,9 +202,10 @@ xxquay:
   networks:
     - type: 'private_network'
       options:
-        ip: 192.168.123.222
+        ip: 192.168.123.230
         libvirt__network_name: example-com
-quay:
+
+xxquay:
   primary: true
   box: centos7
   ansible:
@@ -271,6 +272,23 @@ vbdevel:
         ip: 192.168.57.112
         name: 'vboxnet1'
         adapter: 2
+
+quay-rhel7-devel:
+  box: rhel7
+  memory: 4096
+  cpus: 1
+  ansible:
+    group: 'server'
+    variables:
+      ssh_forward_agent: true
+  # domain: example.com
+  # networks:
+  #   - type: 'private_network'
+  #     options:
+  #       type: static
+  #       ip: 192.168.57.222
+  #       name: 'vboxnet1'
+  #       adapter: 2
 
 
 atomic:

@@ -252,3 +252,140 @@
   # createdb quay
   # ???? createuser --login --pwprompt --createdb --superuser --username quay
   # psql -d quay
+
+  - lineinfile:
+      dest: /var/lib/pgsql/data/postgresql.conf
+      regexp: "#listen_addresses = 'localhost'"
+      line: "listen_addresses = '0.0.0.0'"
+
+  # subscription-manager
+  - yum:
+      name: subscription-manager
+      state: latest
+  - file:
+      path: /etc/pki/product
+      state: directory
+
+  # TLS
+  - name: Run nginx_conf_create.sh
+    become_user: vagrant
+    become: yes
+    command: conf/init/nginx_conf_create.sh
+    environment:
+      QUAYDIR: /home/vagrant/code/quay
+      QUAYCONF: /home/vagrant/code/quay/conf
+    args:
+      chdir: /home/vagrant/code/quay
+
+  - name: Copy all conf files
+    copy:
+      src: "/home/thomasmckay/code/quay/conf/nginx/{{ item }}"
+      dest: "/etc/nginx/{{ item }}"
+      mode: u+rw,g+rw,o+rw
+    with_items:
+      - nginx.conf
+      - root-base.conf
+      - http-base.conf
+      - hosted-http-base.conf
+      - rate-limiting.conf
+      - server-base.conf
+
+  - name: nginx.conf - remove VTS
+    replace:
+      dest: /etc/nginx/nginx.conf
+      regexp: "vhost_traffic_status_zone"
+      replace: "#vhost_traffic_status_zone"
+  - name: nginx.conf - remove VTS
+    replace:
+      dest: /etc/nginx/nginx.conf
+      regexp: "include vhost-traffic-status.conf"
+      replace: "#include vhost-traffic-status.conf"
+  - name: nginx.conf - remove VTS
+    replace:
+      dest: /etc/nginx/root-base.conf
+      regexp: "load_module modules/ngx_http_vhost_traffic_status_module.so"
+      replace: "#load_module modules/ngx_http_vhost_traffic_status_module.so"
+
+  - name: nginx.conf - set ssl.cert and ssl.key
+    replace:
+      dest: /etc/nginx/nginx.conf
+      regexp: "../stack/ssl."
+      replace: "ssl."
+
+  - name: nginx.conf - remove ssl.old.*
+    replace:
+      dest: /etc/nginx/nginx.conf
+      regexp: "ssl.old."
+      replace: "ssl."
+
+  - name: nginx.conf - fix /dev/stdout
+    replace:
+      dest: /etc/nginx/nginx.conf
+      regexp: "/dev/stdout"
+      replace: "syslog"
+  - replace:
+      dest: /etc/nginx/http-base.conf
+      regexp: "/dev/stdout"
+      replace: "syslog"
+  - replace:
+      dest: /etc/nginx/root-base.conf
+      regexp: "/dev/stdout"
+      replace: "syslog"
+
+  - name: Run in daemon mode
+    replace:
+      dest: /etc/nginx/root-base.conf
+      regexp: "daemon off"
+      replace: "daemon on"
+
+  - name: nginx.pid in /run instead of /tmp
+    replace:
+      dest: /etc/nginx/root-base.conf
+      regexp: "pid /tmp/nginx.pid"
+      replace: "pid /run/nginx.pid"
+
+  - name: copy ssl key and cert
+    copy:
+      src: quay-ssl.key
+      dest: /etc/nginx/ssl.key
+      mode: u+rw,g+rw,o+rw
+  - copy:
+      src: quay-ssl.cert
+      dest: /etc/nginx/ssl.cert
+      mode: u+rw,g+rw,o+rw
+
+  - name: Allow nginx to read /tmp
+    replace:
+      dest: /lib/systemd/system/nginx.service
+      regexp: PrivateTmp=true
+      replace: PrivateTmp=false
+  - lineinfile:
+      dest: /lib/systemd/system/nginx.service
+      insertafter: KillMode=process
+      line: PrivateTmp=false
+
+  - name: Point at single gunicorn
+    replace:
+      dest: /etc/nginx/http-base.conf
+      regexp: "server unix:/tmp/gunicorn_web.sock fail_timeout=0;"
+      replace: "server unix:/run/gunicorn_local.sock fail_timeout=0;"
+  - replace:
+      dest: /etc/nginx/http-base.conf
+      regexp: "server unix:/tmp/gunicorn_verbs.sock fail_timeout=0;"
+      replace: "server unix:/run/gunicorn_local.sock fail_timeout=0;"
+  - replace:
+      dest: /etc/nginx/http-base.conf
+      regexp: "server unix:/tmp/gunicorn_registry.sock fail_timeout=0;"
+      replace: "server unix:/run/gunicorn_local.sock fail_timeout=0;"
+
+  - name: Add user group "nogroup"
+    group:
+      name: nogroup
+      state: present
+
+  - name: Restart nginx service
+    systemd:
+      name: nginx
+      state: restarted
+      daemon_reload: yes
+
